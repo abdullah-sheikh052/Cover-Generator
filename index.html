@@ -7,7 +7,12 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="no-print input-container">
+    <!-- Mobile toggle button -->
+    <button class="mobile-toggle no-print" onclick="togglePanel()">
+        ⚙️ Settings &nbsp;<span id="toggleIcon">▼</span>
+    </button>
+
+    <div class="no-print input-container" id="inputPanel">
         <h2>Settings</h2>
         <select id="docType" onchange="update()">
             <option value="Assignment">Assignment</option>
@@ -37,6 +42,7 @@
         <button onclick="window.print()">Generate PDF</button>
     </div>
 
+    <div class="a4-wrapper">
     <div id="cover-page" class="A4">
         <div class="header">
             <img src="kuet_logo.png" class="logo">
@@ -78,6 +84,35 @@
             </div>
         </div>
     </div>
+    </div><!-- end a4-wrapper -->
     <script src="script.js"></script>
+    <script>
+        function togglePanel() {
+            const panel = document.getElementById('inputPanel');
+            const icon = document.getElementById('toggleIcon');
+            panel.classList.toggle('open');
+            icon.textContent = panel.classList.contains('open') ? '▲' : '▼';
+        }
+
+        // Auto-scale A4 to fit the viewport width on mobile
+        function scaleA4() {
+            const a4 = document.querySelector('.A4');
+            const wrapper = document.querySelector('.a4-wrapper');
+            if (!a4 || !wrapper) return;
+            const a4WidthPx = a4.offsetWidth;
+            const available = wrapper.clientWidth - 20; // 10px padding each side
+            const scale = available < a4WidthPx ? available / a4WidthPx : 1;
+            a4.style.transform = scale < 1 ? `scale(${scale})` : '';
+            // Shrink wrapper height to match scaled A4
+            if (scale < 1) {
+                wrapper.style.height = (a4.offsetHeight * scale + 24) + 'px';
+            } else {
+                wrapper.style.height = '';
+            }
+        }
+
+        window.addEventListener('resize', scaleA4);
+        window.addEventListener('load', scaleA4);
+    </script>
 </body>
 </html>
