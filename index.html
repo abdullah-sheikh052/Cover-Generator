@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KUET Cover Gen V5</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
     <!-- Mobile toggle button -->
@@ -39,7 +41,8 @@
         <input type="text" id="inRoll" placeholder="Your Roll" oninput="update()">
         <input type="text" id="inYear" placeholder="Year: 3rd" oninput="update()">
         <input type="text" id="inTerm" placeholder="Term: 1st" oninput="update()">
-        <button onclick="window.print()">Generate PDF</button>
+        <button id="pdfBtn" onclick="generatePDF()">⬇ Download PDF</button>
+        <p id="pdfStatus" style="font-size:13px;color:#555;margin:4px 0 0;display:none;">Generating PDF…</p>
     </div>
 
     <div class="a4-wrapper">
@@ -87,7 +90,55 @@
     </div><!-- end a4-wrapper -->
     <script src="script.js"></script>
     <script>
-        function togglePanel() {
+        async function generatePDF() {
+            const btn = document.getElementById('pdfBtn');
+            const status = document.getElementById('pdfStatus');
+            const a4 = document.getElementById('cover-page');
+
+            // Temporarily remove any CSS transform (mobile scaling) so capture is full resolution
+            const prevTransform = a4.style.transform;
+            a4.style.transform = 'none';
+
+            btn.disabled = true;
+            btn.textContent = '⏳ Generating…';
+            status.style.display = 'block';
+
+            try {
+                const canvas = await html2canvas(a4, {
+                    scale: 3,           // 3× for sharp print-quality output
+                    useCORS: true,
+                    backgroundColor: '#ffffff',
+                    logging: false,
+                    windowWidth: a4.scrollWidth,
+                    windowHeight: a4.scrollHeight
+                });
+
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF({
+                    orientation: 'portrait',
+                    unit: 'mm',
+                    format: 'a4'
+                });
+
+                const imgData = canvas.toDataURL('image/jpeg', 1.0);
+                pdf.addImage(imgData, 'JPEG', 0, 0, 210, 297);
+
+                // Build a filename from student name + course code if available
+                const studentName = document.getElementById('inStudent').value.trim() || 'Cover';
+                const courseCode  = document.getElementById('inCourseCode').value.trim() || 'KUET';
+                const docType     = document.getElementById('docType').value;
+                const no          = document.getElementById('inNo').value.trim() || '01';
+                pdf.save(`${docType}_${no}_${studentName}_${courseCode}.pdf`);
+
+            } catch (err) {
+                alert('PDF generation failed: ' + err.message);
+            } finally {
+                a4.style.transform = prevTransform;
+                btn.disabled = false;
+                btn.textContent = '⬇ Download PDF';
+                status.style.display = 'none';
+            }
+        }
             const panel = document.getElementById('inputPanel');
             const icon = document.getElementById('toggleIcon');
             panel.classList.toggle('open');
