@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KUET Cover Gen V5</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="no-print input-container">
+        <h2>Settings</h2>
+        <select id="docType" onchange="update()">
+            <option value="Assignment">Assignment</option>
+            <option value="Report">Report</option>
+        </select>
+        <select id="borderColor" onchange="update()">
+            <option value="black">Black Border</option>
+            <option value="blue">Blue Shade</option>
+            <option value="yellow">Yellow Shade</option>
+        </select>
+        <hr>
+        <input type="text" id="inNo" placeholder="No: 01" oninput="update()">
+        <textarea id="inName" placeholder="Name (Fixes overflow automatically)" oninput="update()" rows="3"></textarea>
+        <input type="text" id="inCourseCode" placeholder="Course Code" oninput="update()">
+        <input type="text" id="inCourseTitle" placeholder="Course Title" oninput="update()">
+        <hr>
+        <label><input type="checkbox" id="checkPerf" onchange="togglePerf()"> Include Performance Date</label>
+        <input type="text" id="inPerfDate" placeholder="Date of Performance" oninput="update()" style="display:none">
+        <input type="text" id="inSubDate" placeholder="Date of Submission" oninput="update()">
+        <hr>
+        <input type="text" id="inTeacher" placeholder="Teacher Name" oninput="update()">
+        <input type="text" id="inDesignation" placeholder="Designation" oninput="update()">
+        <input type="text" id="inStudent" placeholder="Your Name" oninput="update()">
+        <input type="text" id="inRoll" placeholder="Your Roll" oninput="update()">
+        <input type="text" id="inYear" placeholder="Year: 3rd" oninput="update()">
+        <input type="text" id="inTerm" placeholder="Term: 1st" oninput="update()">
+        <button onclick="window.print()">Generate PDF</button>
+    </div>
+
+    <div id="cover-page" class="A4">
+        <div class="header">
+            <img src="kuet_logo.png" class="logo">
+            <h1 class="uni-name">Khulna University of Engineering & Technology (KUET)</h1>
+            <h2 class="uni-location">Khulna - 9203, Bangladesh</h2>
+        </div>
+
+        <div class="main-info">
+            <p><strong><span id="labelDocType">Assignment</span> No:</strong> <span id="outNo">01</span></p>
+            <div class="name-row">
+                <span class="label-bold"><span id="labelDocName">Assignment</span> Name:</span> 
+                <span id="outName" class="wrapped-text">Reinforcement Calculation</span>
+            </div>
+            <p><strong>Course Code:</strong> <span id="outCourseCode">BECM 3107</span></p>
+            <p><strong>Course Title:</strong> <span id="outCourseTitle">Construction Contract and Law</span></p>
+        </div>
+
+        <div class="submission-box border-black" id="subBox">
+            <div class="sub-column border-right">
+                <h3 class="box-title">Submitted To</h3>
+                <p id="outTeacher" class="bold-text">Teacher Name</p>
+                <p id="outDesignation" class="bold-text">Designation</p>
+                <p>Dept. of Building Engineering and Construction Management</p>
+                <p>KUET</p>
+            </div>
+            <div class="sub-column">
+                <h3 class="box-title">Submitted By</h3>
+                <p id="outStudent" class="bold-text">Your Name</p>
+                <p><strong>Roll:</strong> <span id="outRoll" class="bold-text">Roll No</span></p>
+                <p id="outYear">Year: 3rd</p>
+                <p id="outTerm">Term: 1st</p>
+            </div>
+        </div>
+
+        <div class="footer">
+            <div class="date-stack">
+                <p id="perfRow" style="display:none"><strong>Date of Performance:</strong> <span id="outPerfDate"></span></p>
+                <p id="subRow"><strong>Date of Submission:</strong> <span id="outSubDate">Date</span></p>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
