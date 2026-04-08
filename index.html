@@ -90,80 +90,80 @@
     </div><!-- end a4-wrapper -->
     <script src="script.js"></script>
     <script>
-        async function generatePDF() {
-            const btn = document.getElementById('pdfBtn');
-            const status = document.getElementById('pdfStatus');
-            const a4 = document.getElementById('cover-page');
-
-            // Temporarily remove any CSS transform (mobile scaling) so capture is full resolution
-            const prevTransform = a4.style.transform;
-            a4.style.transform = 'none';
-
-            btn.disabled = true;
-            btn.textContent = '⏳ Generating…';
-            status.style.display = 'block';
-
-            try {
-                const canvas = await html2canvas(a4, {
-                    scale: 3,           // 3× for sharp print-quality output
-                    useCORS: true,
-                    backgroundColor: '#ffffff',
-                    logging: false,
-                    windowWidth: a4.scrollWidth,
-                    windowHeight: a4.scrollHeight
-                });
-
-                const { jsPDF } = window.jspdf;
-                const pdf = new jsPDF({
-                    orientation: 'portrait',
-                    unit: 'mm',
-                    format: 'a4'
-                });
-
-                const imgData = canvas.toDataURL('image/jpeg', 1.0);
-                pdf.addImage(imgData, 'JPEG', 0, 0, 210, 297);
-
-                // Build a filename from student name + course code if available
-                const studentName = document.getElementById('inStudent').value.trim() || 'Cover';
-                const courseCode  = document.getElementById('inCourseCode').value.trim() || 'KUET';
-                const docType     = document.getElementById('docType').value;
-                const no          = document.getElementById('inNo').value.trim() || '01';
-                pdf.save(`${docType}_${no}_${studentName}_${courseCode}.pdf`);
-
-            } catch (err) {
-                alert('PDF generation failed: ' + err.message);
-            } finally {
-                a4.style.transform = prevTransform;
-                btn.disabled = false;
-                btn.textContent = '⬇ Download PDF';
-                status.style.display = 'none';
-            }
-        }
+        // ── Mobile panel toggle ──
+        function togglePanel() {
             const panel = document.getElementById('inputPanel');
-            const icon = document.getElementById('toggleIcon');
+            const icon  = document.getElementById('toggleIcon');
             panel.classList.toggle('open');
             icon.textContent = panel.classList.contains('open') ? '▲' : '▼';
         }
 
-        // Auto-scale A4 to fit the viewport width on mobile
+        // ── A4 preview scaling for small screens ──
         function scaleA4() {
-            const a4 = document.querySelector('.A4');
+            const a4      = document.querySelector('.A4');
             const wrapper = document.querySelector('.a4-wrapper');
             if (!a4 || !wrapper) return;
-            const a4WidthPx = a4.offsetWidth;
-            const available = wrapper.clientWidth - 20; // 10px padding each side
-            const scale = available < a4WidthPx ? available / a4WidthPx : 1;
-            a4.style.transform = scale < 1 ? `scale(${scale})` : '';
-            // Shrink wrapper height to match scaled A4
-            if (scale < 1) {
-                wrapper.style.height = (a4.offsetHeight * scale + 24) + 'px';
-            } else {
-                wrapper.style.height = '';
+            const available = wrapper.clientWidth - 20;
+            const scale     = available < a4.offsetWidth ? available / a4.offsetWidth : 1;
+            a4.style.transform       = scale < 1 ? `scale(${scale})` : '';
+            wrapper.style.height     = scale < 1 ? (a4.offsetHeight * scale + 24) + 'px' : '';
+        }
+        window.addEventListener('resize', scaleA4);
+        window.addEventListener('load',   scaleA4);
+
+        // ── PDF Download ──
+        async function generatePDF() {
+            const btn    = document.getElementById('pdfBtn');
+            const status = document.getElementById('pdfStatus');
+            const a4     = document.getElementById('cover-page');
+
+            // Check libraries loaded
+            if (typeof html2canvas === 'undefined' || typeof window.jspdf === 'undefined') {
+                alert('PDF libraries not loaded yet. Please check your internet connection and try again.');
+                return;
+            }
+
+            // Remove mobile scale transform temporarily so capture is full-res
+            const prevTransform = a4.style.transform;
+            a4.style.transform  = 'none';
+
+            btn.disabled        = true;
+            btn.textContent     = '⏳ Generating…';
+            status.style.display = 'block';
+
+            try {
+                const canvas = await html2canvas(a4, {
+                    scale:           3,
+                    useCORS:         true,
+                    allowTaint:      true,
+                    backgroundColor: '#ffffff',
+                    logging:         false,
+                    width:           a4.offsetWidth,
+                    height:          a4.offsetHeight
+                });
+
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+                const imgData = canvas.toDataURL('image/jpeg', 0.98);
+                pdf.addImage(imgData, 'JPEG', 0, 0, 210, 297);
+
+                const student  = document.getElementById('inStudent').value.trim()    || 'Cover';
+                const code     = document.getElementById('inCourseCode').value.trim() || 'KUET';
+                const docType  = document.getElementById('docType').value;
+                const no       = document.getElementById('inNo').value.trim()         || '01';
+                pdf.save(`${docType}_${no}_${student}_${code}.pdf`);
+
+            } catch (err) {
+                alert('PDF generation failed:\n' + err.message);
+                console.error(err);
+            } finally {
+                a4.style.transform   = prevTransform;
+                btn.disabled         = false;
+                btn.textContent      = '⬇ Download PDF';
+                status.style.display = 'none';
             }
         }
-
-        window.addEventListener('resize', scaleA4);
-        window.addEventListener('load', scaleA4);
     </script>
 </body>
 </html>
